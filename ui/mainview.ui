@@ -61,7 +61,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="file">
@@ -82,6 +82,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionFind"/>
+    <addaction name="actionOpen_all_cards"/>
    </widget>
    <addaction name="file"/>
    <addaction name="menuTools"/>
@@ -105,6 +106,11 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionOpen_all_cards">
+   <property name="text">
+    <string>Open all cards</string>
    </property>
   </action>
  </widget>
