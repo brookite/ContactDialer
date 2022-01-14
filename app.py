@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 from ui.mainview import Ui_MainWindow as MainViewUI
 from ui.contactview import Ui_Form as ContactViewUI
@@ -8,17 +8,37 @@ from core.search import SearchEngine
 
 
 class ContactView(QtWidgets.QWidget):
-    def __init__(self, contact):
+    def __init__(self, contact=None):
         super().__init__()
         self._ui = ContactViewUI()
         self._ui.setupUi(self)
         self._contact = contact
-        self.setting_contact()
+        if self._contact:
+            self.setting_contact()
+        self.clipboard = QtGui.QGuiApplication.clipboard()
+        self._ui.name.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.name)
+        self._ui.tel.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.tel)
+        self._ui.address.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.address)
+        self._ui.email.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.email)
+        self._ui.nickname.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.nickname)
+        self._ui.org.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.org)
+        self._ui.url.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.url)
+
+    def copy_text(self, source):
+        self.clipboard.setText(source.text())
     
-    def setting_contact(self):
-        self._ui.name.setText("Name:" + str(self._contact.name.value))
-        self._ui.tel.setText("Tel. Number:" + ";".join(map(str, self._contact.tel.values)))
+    def setting_contact(self, contact=None):
+        if contact:
+            self._contact = contact
+        self._ui.name.setText(str(self._contact.name.value))
+        self._ui.tel.setText(";".join(map(str, self._contact.tel.values)))
         self._ui.email.setText("Email:" + ";".join(map(str, self._contact.email.values)))
+        self._ui.address.setText("Address:" + ";".join(map(str, self._contact.address.values)))
+        self._ui.nickname.setText("Nickname:" +  ";".join(map(str, self._contact.nickname.values)))
+        self._ui.url.setText("URL:" +  ";".join(map(str, self._contact.url.values)))
+        self._ui.bday.setText("Birthday:" + ";".join(map(str, self._contact.birthday.values)))
+        self._ui.org.setText("Organization:" + ";".join(map(str, self._contact.org.values)))
+        self._ui.notefield.setPlainText(";".join(map(str, self._contact.note.values)))
 
 
 class FindDialog(QtWidgets.QWidget):
@@ -107,7 +127,7 @@ class MainView(QtWidgets.QMainWindow):
         self._ui.actionFind.triggered.connect(self.open_search)
         self._ui.actionOpen_all_cards.triggered.connect(self.openAll)
         self._contentLayout = QtWidgets.QVBoxLayout(self._ui.content)
-        self._view = None
+        self._view = ContactView()
         self.fd = None
         self._searcher = SearchEngine(self._core._vcards, self._core._indexer)
         self._model = QtGui.QStandardItemModel()
@@ -117,6 +137,7 @@ class MainView(QtWidgets.QMainWindow):
         self.openInitialVcards()
         self._ui.searchField.editingFinished.connect(self.search_field_signal)
         self.setWindowTitle("ContactDialer")
+        self._contentLayout.addWidget(self._view)
 
     def openInitialVcards(self):
         for path in self._core.settings["opened"]:
@@ -194,11 +215,8 @@ class MainView(QtWidgets.QMainWindow):
     def open_contact(self, contact):
         filenum, cntnum = contact.parent().row(), contact.row()
         if filenum != -1:
-            if self._view:
-                self._contentLayout.removeWidget(self._view)
-            self._view = ContactView(self._core.route(filenum, cntnum))
-            self._contentLayout.addWidget(self._view)
-
+            self._view.setting_contact(self._core.route(filenum, cntnum))
+            
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

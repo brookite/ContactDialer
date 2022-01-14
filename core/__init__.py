@@ -56,7 +56,7 @@ class AppCore:
         self.settings.add_to_list("opened", path, unique=True)
 
     def number_to_filename(self, file: int):
-        return list(self._vcards.keys())[file]
+        return list(self._tree.keys())[file]
 
     def is_unloaded(self, path):
         if len(self._vcards[path]) == 2:

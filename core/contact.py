@@ -27,7 +27,7 @@ class NameContactData(ContactData):
             if self.name_first:
                 if len(tuple) > 2:
                     self.prefix = tuple[0]
-                    self.given_name = tuple[1], 
+                    self.given_name = tuple[1],
                     self.additional_name = tuple[2]
                     self.surname = tuple[3]
                     self.suffix = tuple[4]
@@ -39,7 +39,7 @@ class NameContactData(ContactData):
             else:
                 if len(tuple) > 2:
                     self.prefix = tuple[0]
-                    self.given_name = tuple[2], 
+                    self.given_name = tuple[2],
                     self.additional_name = tuple[3]
                     self.surname = tuple[1]
                     self.suffix = tuple[4]
@@ -50,9 +50,10 @@ class NameContactData(ContactData):
                     self.given_name = tuple[0]
         else:
             if len(tuple) < 5:
-                raise ValueError("Required 5 arguments for name data, not", len(tuple))
+                raise ValueError(
+                    "Required 5 arguments for name data, not", len(tuple))
             self._name = list(tuple)[:5]
-    
+
     @property
     def suffix(self):
         return self._name[4]
@@ -95,20 +96,20 @@ class NameContactData(ContactData):
 
     def fullname(self):
         if self.name_first:
-            return " ".join([self.prefix, self.given_name, 
-            self.additional_name, self.surname, self.suffix])
+            return " ".join([self.prefix, self.given_name,
+                             self.additional_name, self.surname, self.suffix])
         else:
             return " ".join([
-            self.prefix, self.surname, self.given_name, 
-            self.additional_name, self.suffix])
-    
+                self.prefix, self.surname, self.given_name,
+                self.additional_name, self.suffix])
+
     def __repr__(self):
         return self.fullname()
 
     def _vcard(self, builder):
         builder.add_property("N", list(self._name))
         builder.add_property("FN", self.fullname())
-    
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._name = list(source.values)
@@ -125,7 +126,7 @@ class EmailContactData(ContactData):
     @property
     def type(self):
         return self._type
-    
+
     @property
     def email(self):
         return self._email
@@ -135,21 +136,23 @@ class EmailContactData(ContactData):
 
     def set(self, tuple):
         if len(tuple) < 2:
-            raise ValueError("Required 2 arguments to email data: type and email")
+            raise ValueError(
+                "Required 2 arguments to email data: type and email")
         type = tuple[0].split(",")
         self._type.extend(type)
         self._email = tuple[1]
 
     def _vcard(self, builder):
         if self.email:
-            builder.add_property("EMAIL", self._email, params={} if not self._type else {"TYPE": ",".join(self._type)})
-    
+            builder.add_property("EMAIL", self._email, params={} if not self._type else {
+                                 "TYPE": ",".join(self._type)})
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._email = source.value
             if "TYPE" in source.params:
                 self._type = source.params["TYPE"].split(",")
-    
+
     def __repr__(self):
         return self.email
 
@@ -169,7 +172,7 @@ class TelContactData(ContactData):
     @property
     def type(self):
         return self._type
-    
+
     @property
     def phone(self):
         return self._phone
@@ -179,21 +182,23 @@ class TelContactData(ContactData):
 
     def set(self, tuple):
         if len(tuple) < 2:
-            raise ValueError("Required 2 arguments to telnumber data: type and number")
+            raise ValueError(
+                "Required 2 arguments to telnumber data: type and number")
         type = tuple[0].split(",")
         self._type.extend(type)
         self._phone = tuple[1]
-    
+
     def _vcard(self, builder):
         if self.phone:
-            builder.add_property("TEL", self._phone, params={} if not self._type else {"TYPE": ",".join(self._type)})
-    
+            builder.add_property("TEL", self._phone, params={} if not self._type else {
+                                 "TYPE": ",".join(self._type)})
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._phone = source.value
             if "TYPE" in source.params:
                 self._type = source.params["TYPE"].split(",")
-    
+
     def __repr__(self):
         return self.phone
 
@@ -214,29 +219,31 @@ class AddressContactData(ContactData):
         self._type = None
         self._adr = ["" for i in range(7)]
         self._from_vcard(source)
-    
+
     @property
     def type(self):
         return self._type
-    
+
     @property
     def adr(self):
         return self._adr
-    
+
     def __repr__(self):
         return " ".join(self._adr).strip()
 
     def set(self, tuple):
         if len(tuple) < 2:
-            raise ValueError("Required 2 arguments to address data: type and street address")
+            raise ValueError(
+                "Required 2 arguments to address data: type and street address")
         type = tuple[0].split(",")
         self._type.extend(type)
         self._adr[2] = tuple[1]
-    
+
     def _vcard(self, builder):
         if self._adr:
-            builder.add_property("ADR", list(self._adr), params={} if not self._type else {"TYPE": ",".join(self._type)})
-    
+            builder.add_property("ADR", list(self._adr), params={} if not self._type else {
+                                 "TYPE": ",".join(self._type)})
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._adr = source.values
@@ -249,21 +256,22 @@ class OrganizationContactData(ContactData):
         self._title = None
         self._org = None
         self._from_vcard(sources)
-    
+
     @property
     def title(self):
         return self._title
-    
+
     @property
     def org(self):
         return self._org
 
     def __repr__(self):
         return "{} : {}".format(self.org, self.title)
-    
+
     def set(self, tuple):
         if len(tuple) < 2:
-            raise ValueError("Required 2 arguments to organiztion data: org and title")
+            raise ValueError(
+                "Required 2 arguments to organiztion data: org and title")
         self._org = [tuple[0]] if isinstance(tuple[0], str) else tuple[0]
         self._title = tuple[1]
 
@@ -272,7 +280,7 @@ class OrganizationContactData(ContactData):
             builder.add_property("ORG", list(self._org))
         if self.title:
             builder.add_property("TITLE", self._title)
-    
+
     def _from_vcard(self, sources):
         if sources:
             for source in sources:
@@ -309,7 +317,7 @@ class AnniversaryContactData(ContactData):
         if self._date:
             date = self._get_strdate()
             builder.add_property("BDAY", date)
-    
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._date = source.typedvalue.datetime
@@ -340,8 +348,9 @@ class PhotoContactData(ContactData):
             paramsdict = {"ENCODING": "b"}
             if self._type:
                 paramsdict["TYPE"] = self._type
-            builder.add_property("PHOTO" if not self.islogo else "LOGO", self._bytes, params=paramsdict)
-    
+            builder.add_property(
+                "PHOTO" if not self.islogo else "LOGO", self._bytes, params=paramsdict)
+
     def _from_vcard(self, source):
         if pyvcard.is_vcard_property(source):
             self._bytes = source.value
