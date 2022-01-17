@@ -343,6 +343,10 @@ class PhotoContactData(ContactData):
     def bytes(self):
         return self._bytes
 
+    @property
+    def type(self):
+        return self._type
+
     def _vcard(self, builder):
         if self._bytes:
             paramsdict = {"ENCODING": "b"}

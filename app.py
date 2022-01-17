@@ -16,29 +16,57 @@ class ContactView(QtWidgets.QWidget):
         if self._contact:
             self.setting_contact()
         self.clipboard = QtGui.QGuiApplication.clipboard()
-        self._ui.name.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.name)
-        self._ui.tel.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.tel)
-        self._ui.address.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.address)
-        self._ui.email.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.email)
-        self._ui.nickname.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.nickname)
-        self._ui.org.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.org)
-        self._ui.url.mouseDoubleClickEvent = lambda e : self.copy_text(self._ui.url)
+        self._ui.name.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.name)
+        self._ui.tel.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.tel)
+        self._ui.address.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.address)
+        self._ui.email.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.email)
+        self._ui.nickname.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.nickname)
+        self._ui.org.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.org)
+        self._ui.url.mouseDoubleClickEvent = lambda e: self.copy_text(
+            self._ui.url)
 
     def copy_text(self, source):
         self.clipboard.setText(source.text())
-    
+
     def setting_contact(self, contact=None):
         if contact:
             self._contact = contact
         self._ui.name.setText(str(self._contact.name.value))
         self._ui.tel.setText(";".join(map(str, self._contact.tel.values)))
-        self._ui.email.setText("Email:" + ";".join(map(str, self._contact.email.values)))
-        self._ui.address.setText("Address:" + ";".join(map(str, self._contact.address.values)))
-        self._ui.nickname.setText("Nickname:" +  ";".join(map(str, self._contact.nickname.values)))
-        self._ui.url.setText("URL:" +  ";".join(map(str, self._contact.url.values)))
-        self._ui.bday.setText("Birthday:" + ";".join(map(str, self._contact.birthday.values)))
-        self._ui.org.setText("Organization:" + ";".join(map(str, self._contact.org.values)))
-        self._ui.notefield.setPlainText(";".join(map(str, self._contact.note.values)))
+        self._ui.email.setText(
+            "Email:" + ";".join(map(str, self._contact.email.values)))
+        self._ui.address.setText(
+            "Address:" + ";".join(map(str, self._contact.address.values)))
+        self._ui.nickname.setText(
+            "Nickname:" + ";".join(map(str, self._contact.nickname.values)))
+        self._ui.url.setText(
+            "URL:" + ";".join(map(str, self._contact.url.values)))
+        self._ui.bday.setText(
+            "Birthday:" + ";".join(map(str, self._contact.birthday.values)))
+        self._ui.org.setText(
+            "Organization:" + ";".join(map(str, self._contact.org.values)))
+        self._ui.notefield.setPlainText(
+            ";".join(map(str, self._contact.note.values)))
+
+        photo = None
+        if self._contact.photo.values:
+            photo = self._contact.photo.value.bytes
+        elif self._contact.logo.values:
+            photo = self._contact.logo.value.bytes
+
+        if photo is not None:
+            pixmap = QtGui.QPixmap()
+            pixmap.loadFromData(photo)
+            pixmap = pixmap.scaled(512, 512)
+            self._ui.image.setPixmap(pixmap)
+        else:
+            self._ui.image.clear()
 
 
 class FindDialog(QtWidgets.QWidget):
@@ -81,9 +109,11 @@ class FindDialog(QtWidgets.QWidget):
         return self.VIEW_CMP[text]
 
     def restore(self):
-        self._ui.searchtype.setCurrentText(self.view_representation(self._searcher.settings["type"]))
+        self._ui.searchtype.setCurrentText(
+            self.view_representation(self._searcher.settings["type"]))
         self._ui.casechk.setChecked(self._searcher.settings["case"])
-        self._ui.phonemethod.setCurrentText(self.view_representation(self._searcher.settings["phone_constraints"]))
+        self._ui.phonemethod.setCurrentText(self.view_representation(
+            self._searcher.settings["phone_constraints"]))
         self._ui.fuzzy_k.setValue(self._searcher.settings["fuzzy_k"])
         targets = self._searcher.settings["objects"]
         if "phone" in targets:
@@ -104,16 +134,19 @@ class FindDialog(QtWidgets.QWidget):
             targets.append("name")
         if self._ui.email.isChecked():
             targets.append("email")
-        self._searcher.set_parameters(objects=targets, 
-            type=self.app_representation(self._ui.searchtype.currentText()),
-            case=self._ui.casechk.isChecked(),
-            phone_constraints=self.app_representation(self._ui.phonemethod.currentText()),
-            fuzzy_k=self._ui.fuzzy_k.value()
-        )
-    
+        self._searcher.set_parameters(objects=targets,
+                                      type=self.app_representation(
+                                          self._ui.searchtype.currentText()),
+                                      case=self._ui.casechk.isChecked(),
+                                      phone_constraints=self.app_representation(
+                                          self._ui.phonemethod.currentText()),
+                                      fuzzy_k=self._ui.fuzzy_k.value()
+                                      )
+
     def find(self):
         self.apply_settings()
         self._mainview.find(self._ui.mainSearch.text())
+
 
 class MainView(QtWidgets.QMainWindow):
     def __init__(self):
@@ -196,7 +229,7 @@ class MainView(QtWidgets.QMainWindow):
         for path in filepaths:
             self._core.fetch_vcard(path)
         self.refresh_tree(self._core.vcard_tree())
-    
+
     def refresh_tree(self, tree):
         self._model.clear()
         for file in tree:
@@ -216,7 +249,7 @@ class MainView(QtWidgets.QMainWindow):
         filenum, cntnum = contact.parent().row(), contact.row()
         if filenum != -1:
             self._view.setting_contact(self._core.route(filenum, cntnum))
-            
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
