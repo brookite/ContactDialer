@@ -20,7 +20,7 @@ class ContactFile(AbstractContactBundle):
         self._path = path
 
     def __str__(self):
-        return utils.get_filename(self._path)
+        return get_filename(self._path)
 
 
 class AppCore:

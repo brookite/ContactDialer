@@ -1,4 +1,3 @@
-from enum import unique
 import pyvcard
 from mimetypes import MimeTypes
 import datetime

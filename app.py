@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 import sys
 from ui.mainview import Ui_MainWindow as MainViewUI
 from ui.contactview import Ui_Form as ContactViewUI
@@ -98,6 +98,7 @@ class FindDialog(QtWidgets.QWidget):
         self._ui.setupUi(self)
         self.restore()
         self.setWindowTitle("Search")
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
         self._ui.find.clicked.connect(self.find)
         self._ui.applySettings.clicked.connect(self.apply_settings)
         self._ui.clearSearch.clicked.connect(self.clear)
@@ -170,6 +171,7 @@ class MainView(QtWidgets.QMainWindow):
         self.openInitialVcards()
         self._ui.searchField.editingFinished.connect(self.search_field_signal)
         self.setWindowTitle("ContactDialer")
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
         self._contentLayout.addWidget(self._view)
 
     def openInitialVcards(self):

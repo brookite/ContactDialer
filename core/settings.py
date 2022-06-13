@@ -1,7 +1,8 @@
 import json
 import os
 
-class JSONSettings:    
+
+class JSONSettings:
     def __init__(self, nobuffer=True):
         self.nobuffer = nobuffer
         self._path = os.path.expanduser("~/.cntdialer")
@@ -11,7 +12,7 @@ class JSONSettings:
         else:
             self._model = {}
             self.save()
-    
+
     def __getitem__(self, key):
         return self._model[key]
 
@@ -54,8 +55,7 @@ class JSONSettings:
 
     def __iter__(self):
         return iter(self._model)
-    
+
     def save(self):
         with open(self._path, "w", encoding="utf-8") as fobj:
             json.dump(self._model, fobj)
-            

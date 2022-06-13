@@ -2,7 +2,6 @@ import pyvcard
 from fuzzywuzzy import fuzz
 
 
-
 class SearchEngine:
     def __init__(self, vcards, indexer: pyvcard.vCardIndexer):
         self._vcards = vcards
@@ -38,12 +37,14 @@ class SearchEngine:
         resultset = set()
         if self.settings["type"] != "fuzzy":
             if "name" in self.settings["objects"]:
-                s = self.indexer.find_by_name(query, self.settings["case"], self.settings["type"] == "equal")
+                s = self.indexer.find_by_name(
+                    query, self.settings["case"], self.settings["type"] == "equal")
                 resultset.update(s)
             if "phone" in self.settings["objects"]:
                 phone_nums = set()
                 if self.settings["phone_constraints"] in ["default", "all"]:
-                    s = self.indexer.find_by_phone(query, self.settings["type"] == "equal", True)
+                    s = self.indexer.find_by_phone(
+                        query, self.settings["type"] == "equal", True)
                     phone_nums.update(s)
                 if self.settings["phone_constraints"] in ["start", "all"]:
                     s = self.indexer.find_by_phone_startswith(query, True)
@@ -53,17 +54,21 @@ class SearchEngine:
                     phone_nums.update(s)
                 resultset.update(phone_nums)
             if "email" in self.settings["objects"]:
-                s = self.indexer.find_by_property("EMAIL", query, self.settings["type"] == "equal")
+                s = self.indexer.find_by_property(
+                    "EMAIL", query, self.settings["type"] == "equal")
                 resultset.update(s)
         else:
             f = fuzz.WRatio
             if "name" in self.settings["objects"]:
-                s = self.indexer.difference_search("name", query, f, self.settings["fuzzy_k"])
+                s = self.indexer.difference_search(
+                    "name", query, f, self.settings["fuzzy_k"])
                 resultset.update(s)
             if "phone" in self.settings["objects"]:
-                s = self.indexer.difference_search("phone", query, f, self.settings["fuzzy_k"])
+                s = self.indexer.difference_search(
+                    "phone", query, f, self.settings["fuzzy_k"])
                 resultset.update(s)
             if "email" in self.settings["objects"]:
-                s = self.indexer.difference_search("param", query, f, self.settings["fuzzy_k"], use_param="EMAIL")
+                s = self.indexer.difference_search(
+                    "param", query, f, self.settings["fuzzy_k"], use_param="EMAIL")
                 resultset.update(s)
         return resultset
