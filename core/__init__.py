@@ -1,23 +1,61 @@
-from core import contact
 import pyvcard
 from .utils import get_filename
 from .settings import JSONSettings
+from .contact import Contact
 
 
-def _get_vcard_name(owner):
+def get_vcard_name(owner):
+    if not owner:
+        return "UNNAMED CONTACT"
+
     if len(owner.name.values):
         return repr(owner.name.value)
     else:
         return "UNNAMED CONTACT"
 
-
-class AbstractContactBundle:
-    pass
-
-
-class ContactFile(AbstractContactBundle):
+class ContactFile:
     def __init__(self, path):
         self._path = path
+        self._vcard = None
+        self._vcards = []
+        self._container = []
+
+    def loaded(self):
+        return self._vcard is not None
+    
+    def load(self, indexer):
+        if not self.loaded():
+            self._vcard = pyvcard.openfile(self._path, encoding="utf-8", indexer=indexer)
+            self._vcards = list(self._vcard.vcards())
+            self._container = list(map(Contact, self._vcards))
+
+    @property
+    def container(self):
+        return self._container
+    
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def vcards(self):
+        return self._vcards
+
+    def get_contact_by_vcard(self, vcard):
+        if vcard in self._vcards:
+            i = self._vcards.index(vcard)
+            return i, self._container[i]
+        else:
+            return None, None
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self._path == other
+        else:
+            return super().__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __str__(self):
         return get_filename(self._path)
@@ -26,60 +64,46 @@ class ContactFile(AbstractContactBundle):
 class AppCore:
     def __init__(self):
         self._indexer = pyvcard.vCardIndexer()
-        self._vcards = {}  # raw vcards
-        self._tree = {}  # tree with contact objects
-        self._stored_tree = None
+        self._vcards = []
+
         self.settings = JSONSettings(nobuffer=True)
         self.settings.create("opened", [])
-        self._bundlesinfo = {}
-        contact.Contact.__repr__ = _get_vcard_name # contact representation on view
-
-    def set_temp_tree(self, tree):
-        self._stored_tree = self._tree
-        self._tree = tree
-
-    def revert_tree(self):
-        if self._stored_tree:
-            self._tree = self._stored_tree
-            self._stored_tree = None
 
     def load_vcardinfo(self, path):
         file = ContactFile(path)
-        self._vcards[str(file)] = ["unloaded", path]
-        self._bundlesinfo[str(file)] = file
+        self._vcards.append(file)
+        return file
 
-    def fetch_vcard(self, path):
-        bundle = pyvcard.openfile(path, encoding="utf-8", indexer=self._indexer)
-        file = ContactFile(path)
-        self._vcards[str(file)] = list(bundle.vcards())
-        self._bundlesinfo[str(file)] = file
-        self.settings.add_to_list("opened", path, unique=True)
+    def fetch_vcard(self, file):
+        if isinstance(file, str):
+            if file not in self._vcards:
+                file = self.load_vcardinfo(file)
+                file.load(self._indexer)
+            else:
+                file = self._vcards[self._vcards.index(file)]
+                file.load(self._indexer)
+        else:
+            file.load(self._indexer)
+        self.settings.add_to_list("opened", file.path, unique=True)
 
-    def number_to_filename(self, file: int):
-        return list(self._tree.keys())[file]
+    def get(self, file):
+        if isinstance(file, int):
+            return self._vcards[file]
+        elif isinstance(file, str):
+            return self._vcards[self._vcards.index(file)] 
+    
+    def get_index(self, file):
+        return self._vcards.index(file)
 
-    def is_unloaded(self, path):
-        if len(self._vcards[path]) == 2:
-            return self._vcards[path][0] == "unloaded"
-        return False
-
-    def vcard_tree(self, files=None):
+    def vcard_tree(self, files=[]):
         if isinstance(files, str):
             files = [files]
-        elif not files:
-            files = []
 
-        if self._vcards.keys() == self._tree.keys() and not files:
-            return self._tree
-        else:
-            keys_to_update = set(self._vcards.keys()).symmetric_difference(self._tree.keys())
-            for key in list(keys_to_update) + files:
-                if not self.is_unloaded(key):
-                    self._tree[key] = list(map(lambda vcard: contact.Contact(vcard), self._vcards[key]))
-                else:
-                    self._tree[key] = []
-            return self._tree
+        tree = {}
+        for file in self._vcards:
+            tree[str(file)] = file.container
+        return tree   
 
     def route(self, file, index):
-        file = self.number_to_filename(file)
-        return self._tree[file][index]
+        file = self.get(file)
+        return file.container[index]

@@ -1,11 +1,11 @@
-import pyvcard
 from fuzzywuzzy import fuzz
+from .contact import Contact
 
 
 class SearchEngine:
-    def __init__(self, vcards, indexer: pyvcard.vCardIndexer):
-        self._vcards = vcards
-        self.indexer = indexer
+    def __init__(self, core):
+        self._core = core
+        self.indexer = core._indexer
         self._settings = {
             "case": False,
             "objects": ["phone", "email", "name"],
@@ -22,15 +22,14 @@ class SearchEngine:
     def settings(self):
         return self._settings
 
-    def classified_tree(self, results, contact_tree):
+    def proxy_tree(self, results):
         result_tree = {}
-        for vcard in results:
-            for key in self._vcards:
-                if vcard in self._vcards[key]:
-                    i = self._vcards[key].index(vcard)
-                    if key not in result_tree:
-                        result_tree[key] = []
-                    result_tree[key].append(contact_tree[key][i])
+        for i, file in enumerate(self._core._vcards):
+            for j, vcard in enumerate(file.vcards):
+                if vcard in results:
+                    result_tree.setdefault(i, [])
+                    result_tree[i].append(j)
+                    results.remove(vcard)
         return result_tree
 
     def query(self, query: str):
