@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from ui.contactview import Ui_Form as ContactViewUI
 
 
@@ -8,6 +8,7 @@ class ContactView(QtWidgets.QWidget):
         self._ui = ContactViewUI()
         self._ui.setupUi(self)
         self._contact = contact
+        self.pixmap = None
         if self._contact:
             self.setting_contact()
         self.clipboard = QtGui.QGuiApplication.clipboard()
@@ -56,9 +57,8 @@ class ContactView(QtWidgets.QWidget):
             photo = self._contact.logo.value.bytes
 
         if photo is not None:
-            pixmap = QtGui.QPixmap()
-            pixmap.loadFromData(photo)
-            pixmap = pixmap.scaled(512, 512)
-            self._ui.image.setPixmap(pixmap)
+            self.pixmap = QtGui.QPixmap()
+            self.pixmap.loadFromData(photo)
+            self._ui.image.setPixmap(self.pixmap.scaled(340, 340))
         else:
             self._ui.image.clear()

@@ -1,9 +1,12 @@
 from fuzzywuzzy import fuzz
-from .contact import Contact
+from typing import Set
+from core import AppCore
+
+import pyvcard
 
 
 class SearchEngine:
-    def __init__(self, core):
+    def __init__(self, core: AppCore):
         self._core = core
         self.indexer = core._indexer
         self._settings = {
@@ -22,7 +25,7 @@ class SearchEngine:
     def settings(self):
         return self._settings
 
-    def proxy_tree(self, results):
+    def proxy_tree(self, results: Set["pyvcard.vCard"]):
         result_tree = {}
         for i, file in enumerate(self._core._vcards):
             for j, vcard in enumerate(file.vcards):
@@ -32,7 +35,7 @@ class SearchEngine:
                     results.remove(vcard)
         return result_tree
 
-    def query(self, query: str):
+    def query(self, query: str) -> Set["pyvcard.vCard"]:
         resultset = set()
         if self.settings["type"] != "fuzzy":
             if "name" in self.settings["objects"]:

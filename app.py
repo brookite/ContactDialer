@@ -1,8 +1,7 @@
-from cmath import e
-from PyQt5 import QtWidgets, QtGui
+from typing import Dict, Optional, Tuple, List
+from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 
-from isort import file
 from ui.mainview import Ui_MainWindow as MainViewUI
 
 from core import AppCore, get_vcard_name
@@ -12,9 +11,16 @@ from views.contact import ContactView
 from views.find import FindDialog
 
 class MainView(QtWidgets.QMainWindow):
+    _proxy_tree: Dict
+    _core: AppCore
+    _searcher: SearchEngine
+    fd: Optional[FindDialog]
+
     def __init__(self):
         super().__init__()
         self._proxy_tree = None
+
+        self.qtapp = QtWidgets.QApplication.instance()
 
         self._core = AppCore()
         self._searcher = SearchEngine(self._core)
@@ -26,6 +32,7 @@ class MainView(QtWidgets.QMainWindow):
         self._ui.openVcards.clicked.connect(self.open_contact)
         self._ui.actionFind.triggered.connect(self.open_search)
         self._ui.actionOpen_all_cards.triggered.connect(self.openAll)
+        self._ui.actionAbout_Qt.triggered.connect(self.qtapp.aboutQt)
 
         self._contentLayout = QtWidgets.QVBoxLayout(self._ui.content)
         self._view = ContactView()
@@ -44,20 +51,20 @@ class MainView(QtWidgets.QMainWindow):
 
         self.openInitialVcards()
 
-    def openInitialVcards(self):
+    def openInitialVcards(self) -> None:
         for path in self._core.settings["opened"]:
             self._core.load_vcardinfo(path)
         self.refresh_tree()
 
-    def search_field_signal(self):
+    def search_field_signal(self) -> None:
         self.find(self._ui.searchField.text())
 
-    def open_search(self):
+    def open_search(self) -> None:
         if not self.fd:
             self.fd = FindDialog(self, self._searcher)
         self.fd.show()
 
-    def find(self, query):
+    def find(self, query: str) -> None:
         if query.strip():
             results = self._searcher.query(query)
             tree = self._searcher.proxy_tree(results)
@@ -68,7 +75,7 @@ class MainView(QtWidgets.QMainWindow):
             self._proxy_tree = None
             self.refresh_tree()
 
-    def openAll(self):
+    def openAll(self) -> None:
         for i in range(self._model.rowCount()):
             file = self._core.get(i)
             if file:
@@ -76,7 +83,7 @@ class MainView(QtWidgets.QMainWindow):
                     self._core.fetch_vcard(file)
                     self.refresh_tree()
     
-    def open(self, i, expand=True):
+    def open(self, i, expand: bool=True):
         file = self._core.get(self.fileindex(i))
         if file:
             if not file.loaded():
@@ -89,13 +96,13 @@ class MainView(QtWidgets.QMainWindow):
                 else:
                     self._ui.openVcards.setExpanded(item.index(), False)
 
-    def fileindex(self, i):
+    def fileindex(self, i: QtCore.QModelIndex) -> int:
         index = i.row()
         if self._proxy_tree is not None:
             index = list(self._proxy_tree.keys())[index]
         return index
 
-    def contactindex(self, i):
+    def contactindex(self, i: QtCore.QModelIndex) -> Tuple[int, int]:
         filenum, cntnum = i.parent().row(), i.row()
         if self._proxy_tree is not None:
             filenum =  list(self._proxy_tree.keys())[filenum]
@@ -109,12 +116,12 @@ class MainView(QtWidgets.QMainWindow):
         dialog.filesSelected.connect(self.add_vcards)
         dialog.show()
 
-    def add_vcards(self, filepaths):
+    def add_vcards(self, filepaths: List[str]):
         for path in filepaths:
             self._core.fetch_vcard(path)
         self.refresh_tree()
 
-    def refresh_tree(self):
+    def refresh_tree(self) -> None:
         tree = self._core.vcard_tree()
         if self._proxy_tree is not None:
             tree = {}
@@ -139,7 +146,7 @@ class MainView(QtWidgets.QMainWindow):
                 item.setText(get_vcard_name(cnt))
                 fileitem.appendRow(item)
 
-    def open_contact(self, contact):
+    def open_contact(self, contact: QtCore.QModelIndex) -> None:
         filenum, cntnum = self.contactindex(contact)
         if filenum != -1:
             self._view.setting_contact(self._core.route(filenum, cntnum))
