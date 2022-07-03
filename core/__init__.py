@@ -3,6 +3,7 @@ import pyvcard
 from .utils import get_filename
 from .settings import JSONSettings
 from .contact import Contact
+import os
 
 
 def get_vcard_name(owner):
@@ -83,17 +84,24 @@ class AppCore:
         self._vcards.append(file)
         return file
 
-    def fetch_vcard(self, file: ContactFile):
+    def fetch_vcard(self, file: Union[str, ContactFile]):
         if isinstance(file, str):
-            if file not in self._vcards:
-                file = self.load_vcardinfo(file)
-                file.load(self._indexer)
+            for openedfile in self._vcards:
+                if os.path.samefile(file, openedfile.path):
+                    file = self._vcards[self._vcards.index(file)]
+                    file.load(self._indexer)
+                    break
             else:
-                file = self._vcards[self._vcards.index(file)]
+                file = self.load_vcardinfo(file)
                 file.load(self._indexer)
         else:
             file.load(self._indexer)
         self.settings.add_to_list("opened", file.path, unique=True)
+    
+    def remove_file(self, file: ContactFile):
+        if file in self._vcards:
+            self.settings.remove_from_list("opened", file.path)
+            self._vcards.remove(file)
 
     def get(self, file: Union[str, int]) -> ContactFile:
         if isinstance(file, int):

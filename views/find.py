@@ -1,35 +1,37 @@
 from PyQt5 import QtWidgets, QtGui
 from ui.finddialog import Ui_Form as FindDialogUI
 
+from core import search
+
 class FindDialog(QtWidgets.QWidget):
-    VIEW_CMP = {
-        "equal": "Equal",
-        "contain": "Contain",
-        "fuzzy": "Fuzzy",
-        "end": "At end",
-        "start": "At start",
-        "all": "All",
-        "default": "Default"
-    }
-
-    APP_CMP = {
-        "Equal": "equal",
-        "Contain": "contain",
-        "Fuzzy": "fuzzy",
-        "At end": "end",
-        "At start": "start",
-        "All": "all",
-        "Default": "default"
-    }
-
-    def __init__(self, mainview, searcher):
+    def __init__(self, mainview: "app.MainView", searcher: search.SearchEngine):
         super().__init__()
+        self.VIEW_CMP = {
+            "equal": self.tr("Equal"),
+            "contain": self.tr("Contain"),
+            "fuzzy": self.tr("Fuzzy"),
+            "end": self.tr("At end"),
+            "start": self.tr("At start"),
+            "all": self.tr("All"),
+            "default": self.tr("Default")
+        }
+
+        self.APP_CMP = {
+            self.tr("Equal"): "equal",
+            self.tr("Contain"): "contain",
+            self.tr("Fuzzy"): "fuzzy",
+            self.tr("At end"): "end",
+            self.tr("At start"): "start",
+            self.tr("All"): "all",
+            self.tr("Default"): "default"
+        }
+
         self._searcher = searcher
         self._mainview = mainview
         self._ui = FindDialogUI()
         self._ui.setupUi(self)
         self.restore()
-        self.setWindowTitle("Search")
+        self.setWindowTitle(self.tr("Search"))
         self.setWindowIcon(QtGui.QIcon('icon.png'))
         self._ui.find.clicked.connect(self.find)
         self._ui.applySettings.clicked.connect(self.apply_settings)

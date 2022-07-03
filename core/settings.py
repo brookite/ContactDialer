@@ -1,6 +1,6 @@
 import json
 import os
-
+from typing import Union
 
 class JSONSettings:
     def __init__(self, nobuffer=True):
@@ -13,25 +13,26 @@ class JSONSettings:
             self._model = {}
             self.save()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         return self._model[key]
 
-    def __contains__(self, key):
+    def __contains__(self, key: str):
         return key in self._model
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         self._model[key] = value
         if self.nobuffer:
             self.save()
 
     def resolve_object(self, *keys):
-        if len(keys) >= 1:
+        if len(keys) >= 2:
             branch = self[keys[0]]
-            for k in keys[1:]:
+            for k in keys[1:-1]:
                 branch = branch[k]
             return branch
+        return branch
 
-    def add_to_list(self, key, value, unique=False):
+    def add_to_list(self, key: Union[str, tuple], value, unique=False):
         if isinstance(key, tuple):
             branch = self.resolve_object(*key)
         else:
@@ -42,8 +43,19 @@ class JSONSettings:
             branch[key].append(value)
         if self.nobuffer:
             self.save()
+    
+    def remove_from_list(self, key: Union[str, tuple], value):
+        if isinstance(key, tuple):
+            branch = self.resolve_object(*key)
+        else:
+            branch = self
+        if key not in branch:
+            return
+        branch[key].remove(value)
+        if self.nobuffer:
+            self.save()
 
-    def create(self, key, value):
+    def create(self, key: Union[str, tuple], value):
         if isinstance(key, tuple):
             branch = self.resolve_object(*key)
         else:
@@ -58,4 +70,4 @@ class JSONSettings:
 
     def save(self):
         with open(self._path, "w", encoding="utf-8") as fobj:
-            json.dump(self._model, fobj)
+            json.dump(self._model, fobj, ensure_ascii=False)
