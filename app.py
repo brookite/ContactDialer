@@ -112,12 +112,8 @@ class MainView(QtWidgets.QMainWindow):
             self.open_file(file)
 
     def export_action(self):
-        main_index = self._ui.openVcards.currentIndex().parent().row()
-        secondary_index = self._ui.openVcards.currentIndex().row()
-        if main_index == -1:
-            file = self._core.get(secondary_index)
-        else:
-            file = self._core.get(main_index)
+        index = self._ui.openVcards.currentIndex().row()
+        file = self._core.get(index)
         self.open_file(file)
         vset = pyvcard.vCardSet(file.vcards)
         csv = pyvcard.convert(vset).csv().permanent_result()
@@ -212,15 +208,13 @@ class MainView(QtWidgets.QMainWindow):
             self._view.setting_contact(self._core.route(filenum, cntnum))
     
     def on_context_menu(self, menu):
-        menu.exec_(QtGui.QCursor.pos())
+        main_index = self._ui.openVcards.currentIndex().parent().row()
+        if main_index == -1:
+            menu.exec_(QtGui.QCursor.pos())
     
     def remove_file(self):
-        main_index = self._ui.openVcards.currentIndex().parent().row()
-        secondary_index = self._ui.openVcards.currentIndex().row()
-        if main_index == -1:
-            file = self._core.get(secondary_index)
-        else:
-            file = self._core.get(main_index)
+        index = self._ui.openVcards.currentIndex().row()
+        file = self._core.get(index)
         self._core.remove_file(file)
         self.refresh_tree()
 
