@@ -45,6 +45,7 @@ class Ui_Form(object):
         self.image.setSizePolicy(sizePolicy)
         self.image.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.image.setText("")
+        self.image.setAlignment(QtCore.Qt.AlignCenter)
         self.image.setObjectName("image")
         self.gridLayout.addWidget(self.image, 0, 0, 1, 1)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
