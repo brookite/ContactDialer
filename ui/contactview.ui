@@ -84,6 +84,12 @@
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QLabel" name="name">
+            <property name="maximumSize">
+             <size>
+              <width>512</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <family>Segoe UI</family>

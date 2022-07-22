@@ -51,6 +51,7 @@ class Ui_Form(object):
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.name = QtWidgets.QLabel(self.frame)
+        self.name.setMaximumSize(QtCore.QSize(512, 16777215))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setPointSize(14)

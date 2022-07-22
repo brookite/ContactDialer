@@ -33,7 +33,15 @@ class ContactView(QtWidgets.QWidget):
     def setting_contact(self, contact=None):
         if contact:
             self._contact = contact
-        self._ui.name.setText(str(self._contact.name.value))
+        if len(self._contact.name.values):
+            self._ui.name.setText(str(self._contact.name.value))
+            if len(str(self._contact.name.value)) > 16:
+                self._ui.name.setToolTip(str(self._contact.name.value))
+            else:
+                self._ui.name.setToolTip(None)
+        else:
+            self._ui.name.setText("UNNAMED CONTACT")
+            self._ui.name.setToolTip(None)
         self._ui.tel.setText(";".join(map(str, self._contact.tel.values)))
         self._ui.email.setText(
             "Email:" + ";".join(map(str, self._contact.email.values)))

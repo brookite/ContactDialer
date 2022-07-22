@@ -15,6 +15,7 @@ def get_vcard_name(owner):
     else:
         return "UNNAMED CONTACT"
 
+
 class ContactFile:
     _vcards: List["pyvcard.vCard"]
     _path: str
@@ -32,7 +33,8 @@ class ContactFile:
     def load(self, indexer: pyvcard.vCardIndexer):
         if not self.loaded():
             self._vcard = pyvcard.openfile(self._path, encoding="utf-8", indexer=indexer)
-            self._vcards = list(self._vcard.vcards())
+            self._vcards = list(sorted(self._vcard.vcard_list(),
+                                       key=lambda x: x.contact_name() if x.contact_name() else ""))
             self._container = list(map(Contact, self._vcards))
 
     @property
