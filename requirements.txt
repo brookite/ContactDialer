@@ -1,2 +1,3 @@
 PyQt5
 fuzzywuzzy
+pyvcard @ git+https://github.com/brookite/pyvcard
